@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import re
 import time
 from telnetlib import DO, DONT, ECHO, IAC, WILL, WONT
@@ -60,7 +59,7 @@ class RuckusFastironBase(CiscoSSHConnection):
 
     def save_config(self, cmd="write mem", confirm=False, confirm_response=""):
         """Saves configuration."""
-        return super(RuckusFastironBase, self).save_config(
+        return super().save_config(
             cmd=cmd, confirm=confirm, confirm_response=confirm_response
         )
 
@@ -69,7 +68,7 @@ class RuckusFastironTelnet(RuckusFastironBase):
     def __init__(self, *args, **kwargs):
         default_enter = kwargs.get("default_enter")
         kwargs["default_enter"] = "\r\n" if default_enter is None else default_enter
-        super(RuckusFastironTelnet, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _process_option(self, tsocket, command, option):
         """
@@ -87,7 +86,7 @@ class RuckusFastironTelnet(RuckusFastironBase):
     def telnet_login(self, *args, **kwargs):
         # set callback function to handle telnet options.
         self.remote_conn.set_option_negotiation_callback(self._process_option)
-        return super(RuckusFastironTelnet, self).telnet_login(*args, **kwargs)
+        return super().telnet_login(*args, **kwargs)
 
 
 class RuckusFastironSSH(RuckusFastironBase):

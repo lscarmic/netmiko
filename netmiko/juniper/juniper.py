@@ -1,11 +1,8 @@
-from __future__ import unicode_literals
-
 import re
 import time
 
 from netmiko.base_connection import BaseConnection
 from netmiko.scp_handler import BaseFileTransfer
-from netmiko.py23_compat import text_type
 
 
 class JuniperBase(BaseConnection):
@@ -72,11 +69,11 @@ class JuniperBase(BaseConnection):
 
     def check_config_mode(self, check_string="]"):
         """Checks if the device is in configuration mode or not."""
-        return super(JuniperBase, self).check_config_mode(check_string=check_string)
+        return super().check_config_mode(check_string=check_string)
 
     def config_mode(self, config_command="configure"):
         """Enter configuration mode."""
-        return super(JuniperBase, self).config_mode(config_command=config_command)
+        return super().config_mode(config_command=config_command)
 
     def exit_config_mode(self, exit_config="exit configuration-mode"):
         """Exit configuration mode."""
@@ -142,7 +139,7 @@ class JuniperBase(BaseConnection):
             commit_marker = "configuration check succeeds"
         elif confirm:
             if confirm_delay:
-                command_string = "commit confirmed " + text_type(confirm_delay)
+                command_string = "commit confirmed " + str(confirm_delay)
             else:
                 command_string = "commit confirmed"
             commit_marker = "commit confirmed will be automatically rolled back in"
@@ -151,7 +148,7 @@ class JuniperBase(BaseConnection):
         if comment:
             if '"' in comment:
                 raise ValueError("Invalid comment contains double quote")
-            comment = '"{0}"'.format(comment)
+            comment = f'"{comment}"'
             command_string += " comment " + comment
 
         if and_quit:
@@ -178,15 +175,13 @@ class JuniperBase(BaseConnection):
             )
 
         if commit_marker not in output:
-            raise ValueError(
-                "Commit failed with the following errors:\n\n{0}".format(output)
-            )
+            raise ValueError(f"Commit failed with the following errors:\n\n{output}")
 
         return output
 
     def strip_prompt(self, *args, **kwargs):
         """Strip the trailing router prompt from the output."""
-        a_string = super(JuniperBase, self).strip_prompt(*args, **kwargs)
+        a_string = super().strip_prompt(*args, **kwargs)
         return self.strip_context_items(a_string)
 
     def strip_context_items(self, a_string):
@@ -226,21 +221,28 @@ class JuniperTelnet(JuniperBase):
     def __init__(self, *args, **kwargs):
         default_enter = kwargs.get("default_enter")
         kwargs["default_enter"] = "\r\n" if default_enter is None else default_enter
-        super(JuniperTelnet, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class JuniperFileTransfer(BaseFileTransfer):
     """Juniper SCP File Transfer driver."""
 
     def __init__(
-        self, ssh_conn, source_file, dest_file, file_system="/var/tmp", direction="put"
+        self,
+        ssh_conn,
+        source_file,
+        dest_file,
+        file_system="/var/tmp",
+        direction="put",
+        **kwargs,
     ):
-        return super(JuniperFileTransfer, self).__init__(
+        return super().__init__(
             ssh_conn=ssh_conn,
             source_file=source_file,
             dest_file=dest_file,
             file_system=file_system,
             direction=direction,
+            **kwargs,
         )
 
     def remote_space_available(self, search_pattern=""):
@@ -258,9 +260,7 @@ class JuniperFileTransfer(BaseFileTransfer):
         )
 
     def remote_md5(self, base_cmd="file checksum md5", remote_file=None):
-        return super(JuniperFileTransfer, self).remote_md5(
-            base_cmd=base_cmd, remote_file=remote_file
-        )
+        return super().remote_md5(base_cmd=base_cmd, remote_file=remote_file)
 
     def enable_scp(self, cmd=None):
         raise NotImplementedError

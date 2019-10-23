@@ -41,7 +41,7 @@ def net_connect(request):
 @pytest.fixture()
 def net_connect_cm(request):
     """
-    Create the SSH connection to the remote device using a context manager 
+    Create the SSH connection to the remote device using a context manager
     retrieve the find_prompt() data and close the connection.
     """
     device_under_test = request.config.getoption("test_device")
@@ -65,6 +65,8 @@ def net_connect_slog_wr(request):
     test_devices = parse_yaml(PWD + "/etc/test_devices.yml")
     device = test_devices[device_under_test]
     device["verbose"] = False
+    # Overwrite default session_log location
+    device["session_log"] = "SLOG/cisco881_slog_wr.log"
     device["session_log_record_writes"] = True
     conn = ConnectHandler(**device)
     return conn
@@ -179,6 +181,14 @@ def delete_file_generic(ssh_conn, dest_file_system, dest_file):
     return output
 
 
+def delete_file_ciena_saos(ssh_conn, dest_file_system, dest_file):
+    """Delete a remote file for a ciena device."""
+    full_file_name = "{}/{}".format(dest_file_system, dest_file)
+    cmd = "file rm {}".format(full_file_name)
+    output = ssh_conn.send_command_timing(cmd, strip_command=False, strip_prompt=False)
+    return output
+
+
 @pytest.fixture(scope="module")
 def scp_fixture(request):
     """
@@ -206,6 +216,9 @@ def scp_fixture(request):
 
     platform = device["device_type"]
     dest_file_system = platform_args[platform]["file_system"]
+    if "ciena_saos" in platform and ssh_conn.username:
+        dest_file_system = f"/tmp/users/{ssh_conn.username}"
+
     source_file = "test9.txt"
     dest_file = "test9.txt"
     local_file = "testx.txt"
@@ -316,7 +329,7 @@ def tcl_fixture(request):
 
 @pytest.fixture(scope="module")
 def ssh_autodetect(request):
-    """Create an SSH autodetect object. 
+    """Create an SSH autodetect object.
 
     return (ssh_conn, real_device_type)
     """
@@ -421,5 +434,10 @@ def get_platform_args():
             "file_system": "/home/admin",
             "enable_scp": False,
             "delete_file": delete_file_dellos10,
+        },
+        "ciena_saos": {
+            "file_system": "/tmp/users/ciena",
+            "enable_scp": False,
+            "delete_file": delete_file_ciena_saos,
         },
     }
