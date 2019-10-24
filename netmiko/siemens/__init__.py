@@ -1,4 +1,4 @@
-from netmiko.siemens.ros import ROSSSH
-from netmiko.siemens.ros import ROSTelnet
+from netmiko.siemens.siemens_ros import ROSSSH
+from netmiko.siemens.siemens_ros import ROSTelnet
 
 __all__ = ["ROSSSH", "ROSTelnet"]

@@ -1,22 +1,31 @@
 
 
-# def __init__(self, ip, username, password, secret='', port=22, device_type='', verbose=True):
-# def establish_connection(self, sleep_time=3, verbose=True):
-# def disable_paging(self):
-# def find_prompt(self):
-# def clear_buffer(self):
-# def send_command(self, command_string, delay_factor=1, max_loops=30):
-# def strip_prompt(self, a_string):
-# def strip_command(self, command_string, output):
-# def normalize_linefeeds(self, a_string):
-
-# def cleanup(self):
-# def disconnect(self):
-
 from __future__ import unicode_literals
 from __future__ import print_function
 import time
 from netmiko.base_connection import BaseConnection
+
+# This was used in initial testing. Not sure of the difference between it and BaseConnection.
+
+# from netmiko.terminal_server import TerminalServerSSH
+
+# class ROSBase(TerminalServerSSH):
+#     """Siemens ROS support, Tested on RS1600 and RSG2100."""
+#     def session_preparation(self):
+#         """Prepare the session after the connection has been established."""
+#         # Ruggedcom forces an 'ENTER' after SSH connections only
+#         # (but it doesn't hurt to press 'ENTER' during Telnet)
+#         self.write_channel(self.RETURN)
+#         time.sleep(.3 * self.global_delay_factor)
+#         shell_command = chr(19)  # CTRL-S to get to shell
+#         self.write_channel(shell_command)
+#         time.sleep(.3 * self.global_delay_factor)
+#         self._test_channel_read(pattern=r'>')
+#         self.set_base_prompt()
+#         self.disable_paging()
+#         # Clear the read buffer
+#         time.sleep(.3 * self.global_delay_factor)
+#         self.clear_buffer()
 
 class ROSBase(BaseConnection):
     """Siemens ROS support, Tested on RS1600 and RSG2100."""
