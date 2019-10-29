@@ -1,6 +1,4 @@
 """Controls selection of proper class based on the device type."""
-from __future__ import unicode_literals
-
 from netmiko.a10 import A10SSH
 from netmiko.accedian import AccedianSSH
 from netmiko.alcatel import AlcatelAosSSH
@@ -11,7 +9,7 @@ from netmiko.apresia import ApresiaAeosSSH, ApresiaAeosTelnet
 from netmiko.aruba import ArubaSSH
 from netmiko.calix import CalixB6SSH, CalixB6Telnet
 from netmiko.checkpoint import CheckPointGaiaSSH
-from netmiko.ciena import CienaSaosSSH
+from netmiko.ciena import CienaSaosSSH, CienaSaosTelnet, CienaSaosFileTransfer
 from netmiko.cisco import CiscoAsaSSH, CiscoAsaFileTransfer
 from netmiko.cisco import (
     CiscoIosSSH,
@@ -23,8 +21,9 @@ from netmiko.cisco import CiscoNxosSSH, CiscoNxosFileTransfer
 from netmiko.cisco import CiscoS300SSH
 from netmiko.cisco import CiscoTpTcCeSSH
 from netmiko.cisco import CiscoWlcSSH
-from netmiko.cisco import CiscoXrSSH, CiscoXrFileTransfer
+from netmiko.cisco import CiscoXrSSH, CiscoXrTelnet, CiscoXrFileTransfer
 from netmiko.citrix import NetscalerSSH
+from netmiko.cloudgenix import CloudGenixIonSSH
 from netmiko.coriant import CoriantSSH
 from netmiko.dell import DellDNOS6SSH
 from netmiko.dell import DellDNOS6Telnet
@@ -33,7 +32,8 @@ from netmiko.dell import DellOS10SSH, DellOS10FileTransfer
 from netmiko.dell import DellPowerConnectSSH
 from netmiko.dell import DellPowerConnectTelnet
 from netmiko.dell import DellIsilonSSH
-from netmiko.eltex import EltexSSH
+from netmiko.eltex import EltexSSH, EltexEsrSSH
+from netmiko.endace import EndaceSSH
 from netmiko.enterasys import EnterasysSSH
 from netmiko.extreme import ExtremeErsSSH
 from netmiko.extreme import ExtremeExosSSH
@@ -53,8 +53,12 @@ from netmiko.huawei import HuaweiSSH, HuaweiVrpv8SSH, HuaweiTelnet
 from netmiko.ipinfusion import IpInfusionOcNOSSSH, IpInfusionOcNOSTelnet
 from netmiko.juniper import JuniperSSH, JuniperTelnet
 from netmiko.juniper import JuniperFileTransfer
+from netmiko.keymile import KeymileSSH, KeymileNOSSSH
 from netmiko.linux import LinuxSSH, LinuxFileTransfer
-from netmiko.mellanox import MellanoxSSH
+from netmiko.mikrotik import MikrotikRouterOsSSH
+from netmiko.mikrotik import MikrotikSwitchOsSSH
+from netmiko.mellanox import MellanoxMlnxosSSH
+from netmiko.mrv import MrvLxSSH
 from netmiko.mrv import MrvOptiswitchSSH
 from netmiko.netapp import NetAppcDotSSH
 from netmiko.oneaccess import OneaccessOneOSTelnet, OneaccessOneOSSSH
@@ -102,6 +106,7 @@ CLASS_MAPPER_BASE = {
     "cisco_wlc": CiscoWlcSSH,
     "cisco_xe": CiscoIosSSH,
     "cisco_xr": CiscoXrSSH,
+    "cloudgenix_ion": CloudGenixIonSSH,
     "coriant": CoriantSSH,
     "dell_dnos9": DellForce10SSH,
     "dell_force10": DellForce10SSH,
@@ -110,7 +115,9 @@ CLASS_MAPPER_BASE = {
     "dell_os10": DellOS10SSH,
     "dell_powerconnect": DellPowerConnectSSH,
     "dell_isilon": DellIsilonSSH,
+    "endace": EndaceSSH,
     "eltex": EltexSSH,
+    "eltex_esr": EltexEsrSSH,
     "enterasys": EnterasysSSH,
     "extreme": ExtremeExosSSH,
     "extreme_ers": ExtremeErsSSH,
@@ -134,8 +141,14 @@ CLASS_MAPPER_BASE = {
     "ipinfusion_ocnos": IpInfusionOcNOSSSH,
     "juniper": JuniperSSH,
     "juniper_junos": JuniperSSH,
+    "keymile": KeymileSSH,
+    "keymile_nos": KeymileNOSSSH,
     "linux": LinuxSSH,
-    "mellanox": MellanoxSSH,
+    "mikrotik_routeros": MikrotikRouterOsSSH,
+    "mikrotik_switchos": MikrotikSwitchOsSSH,
+    "mellanox": MellanoxMlnxosSSH,
+    "mellanox_mlnxos": MellanoxMlnxosSSH,
+    "mrv_lx": MrvLxSSH,
     "mrv_optiswitch": MrvOptiswitchSSH,
     "netapp_cdot": NetAppcDotSSH,
     "netscaler": NetscalerSSH,
@@ -155,12 +168,13 @@ CLASS_MAPPER_BASE = {
 
 FILE_TRANSFER_MAP = {
     "arista_eos": AristaFileTransfer,
+    "ciena_saos": CienaSaosFileTransfer,
     "cisco_asa": CiscoAsaFileTransfer,
     "cisco_ios": CiscoIosFileTransfer,
-    "dell_os10": DellOS10FileTransfer,
     "cisco_nxos": CiscoNxosFileTransfer,
     "cisco_xe": CiscoIosFileTransfer,
     "cisco_xr": CiscoXrFileTransfer,
+    "dell_os10": DellOS10FileTransfer,
     "juniper_junos": JuniperFileTransfer,
     "linux": LinuxFileTransfer,
 }
@@ -186,7 +200,9 @@ CLASS_MAPPER["arista_eos_telnet"] = AristaTelnet
 CLASS_MAPPER["brocade_fastiron_telnet"] = RuckusFastironTelnet
 CLASS_MAPPER["brocade_netiron_telnet"] = ExtremeNetironTelnet
 CLASS_MAPPER["calix_b6_telnet"] = CalixB6Telnet
+CLASS_MAPPER["ciena_saos_telnet"] = CienaSaosTelnet
 CLASS_MAPPER["cisco_ios_telnet"] = CiscoIosTelnet
+CLASS_MAPPER["cisco_xr_telnet"] = CiscoXrTelnet
 CLASS_MAPPER["dell_dnos6_telnet"] = DellDNOS6Telnet
 CLASS_MAPPER["dell_powerconnect_telnet"] = DellPowerConnectTelnet
 CLASS_MAPPER["extreme_telnet"] = ExtremeExosTelnet
@@ -195,14 +211,17 @@ CLASS_MAPPER["extreme_netiron_telnet"] = ExtremeNetironTelnet
 CLASS_MAPPER["generic_termserver_telnet"] = TerminalServerTelnet
 CLASS_MAPPER["hp_procurve_telnet"] = HPProcurveTelnet
 CLASS_MAPPER["hp_comware_telnet"] = HPComwareTelnet
+CLASS_MAPPER["huawei_telnet"] = HuaweiTelnet
 CLASS_MAPPER["ipinfusion_ocnos_telnet"] = IpInfusionOcNOSTelnet
 CLASS_MAPPER["juniper_junos_telnet"] = JuniperTelnet
 CLASS_MAPPER["paloalto_panos_telnet"] = PaloAltoPanosTelnet
+CLASS_MAPPER["oneaccess_oneos_telnet"] = OneaccessOneOSTelnet
 CLASS_MAPPER["rad_etx_telnet"] = RadETXTelnet
 CLASS_MAPPER["ruckus_fastiron_telnet"] = RuckusFastironTelnet
 CLASS_MAPPER["siemens_ros_telnet"] = ROSTelnet
 CLASS_MAPPER["oneaccess_oneos_telnet"] = OneaccessOneOSTelnet
 CLASS_MAPPER["huawei_telnet"] = HuaweiTelnet
+
 
 # Add serial drivers
 CLASS_MAPPER["cisco_ios_serial"] = CiscoIosSerial
@@ -242,7 +261,6 @@ def ssh_dispatcher(device_type):
 
 def redispatch(obj, device_type, session_prep=True):
     """Dynamically change Netmiko object's class to proper class.
-
     Generally used with terminal_server device_type when you need to redispatch after interacting
     with terminal server.
     """
