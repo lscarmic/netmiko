@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import time
 from telnetlib import IAC, DO, DONT, WILL, WONT, SB, SE, TTYPE
 from netmiko.cisco_base_connection import CiscoBaseConnection
@@ -9,7 +10,7 @@ class IpInfusionOcNOSBase(CiscoBaseConnection):
     def __init__(self, *args, **kwargs):
         if kwargs.get("default_enter") is None:
             kwargs["default_enter"] = "\r"
-        return super().__init__(**kwargs)
+        return super(IpInfusionOcNOSBase, self).__init__(**kwargs)
 
     def session_preparation(self):
         self._test_channel_read()
@@ -22,7 +23,7 @@ class IpInfusionOcNOSBase(CiscoBaseConnection):
 
     def save_config(self, cmd="write", confirm=False, confirm_response=""):
         """Saves Config Using write command"""
-        return super().save_config(
+        return super(IpInfusionOcNOSBase, self).save_config(
             cmd=cmd, confirm=confirm, confirm_response=confirm_response
         )
 
@@ -61,7 +62,7 @@ class IpInfusionOcNOSTelnet(IpInfusionOcNOSBase):
     ):
         # set callback function to handle telnet options.
         self.remote_conn.set_option_negotiation_callback(self._process_option)
-        return super().telnet_login(
+        return super(IpInfusionOcNOSTelnet, self).telnet_login(
             pri_prompt_terminator=pri_prompt_terminator,
             alt_prompt_terminator=alt_prompt_terminator,
             username_pattern=username_pattern,

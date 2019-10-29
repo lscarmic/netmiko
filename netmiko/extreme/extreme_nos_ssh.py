@@ -1,4 +1,5 @@
 """Support for Extreme NOS/VDX."""
+from __future__ import unicode_literals
 import time
 from netmiko.cisco_base_connection import CiscoSSHConnection
 
@@ -27,6 +28,6 @@ class ExtremeNosSSH(CiscoSSHConnection):
         confirm_response="y",
     ):
         """Save Config for Extreme VDX."""
-        return super().save_config(
+        return super(ExtremeNosSSH, self).save_config(
             cmd=cmd, confirm=confirm, confirm_response=confirm_response
         )

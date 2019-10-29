@@ -1,4 +1,5 @@
 """Dell Force10 Driver - supports DNOS9."""
+from __future__ import unicode_literals
 from netmiko.cisco_base_connection import CiscoSSHConnection
 
 
@@ -12,6 +13,6 @@ class DellForce10SSH(CiscoSSHConnection):
         confirm_response="",
     ):
         """Saves Config"""
-        return super().save_config(
+        return super(DellForce10SSH, self).save_config(
             cmd=cmd, confirm=confirm, confirm_response=confirm_response
         )

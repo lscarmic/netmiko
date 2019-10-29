@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from __future__ import unicode_literals
+import time
+import sys
+import os
+from datetime import datetime
+from getpass import getpass
+from netmiko import ConnectHandler, InLineTransfer
+
+
 def test_tcl_put(tcl_fixture):
     ssh_conn, transfer = tcl_fixture
     if transfer.check_file_exists():
@@ -7,7 +17,7 @@ def test_tcl_put(tcl_fixture):
         transfer._enter_tcl_mode()
         transfer.put_file()
         transfer._exit_tcl_mode()
-        assert transfer.check_file_exists() is True
+        assert transfer.check_file_exists() == True
 
 
 def test_remote_space_available(tcl_fixture):
@@ -18,10 +28,10 @@ def test_remote_space_available(tcl_fixture):
 
 def test_verify_space_available_put(tcl_fixture):
     ssh_conn, transfer = tcl_fixture
-    assert transfer.verify_space_available() is True
+    assert transfer.verify_space_available() == True
     # intentional make there not be enough space available
     transfer.file_size = 1000000000
-    assert transfer.verify_space_available() is False
+    assert transfer.verify_space_available() == False
 
 
 def test_remote_file_size(tcl_fixture):
@@ -36,7 +46,7 @@ def test_md5_methods(tcl_fixture):
 
     remote_md5 = transfer.remote_md5()
     assert remote_md5 == md5_value
-    assert transfer.compare_md5() is True
+    assert transfer.compare_md5() == True
 
 
 def test_disconnect(tcl_fixture):

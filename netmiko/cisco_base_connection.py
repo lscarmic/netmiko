@@ -1,7 +1,8 @@
 """CiscoBaseConnection is netmiko SSH class for Cisco and Cisco-like platforms."""
+from __future__ import unicode_literals
 from netmiko.base_connection import BaseConnection
 from netmiko.scp_handler import BaseFileTransfer
-from netmiko.ssh_exception import NetmikoAuthenticationException
+from netmiko.ssh_exception import NetMikoAuthenticationException
 import re
 import time
 
@@ -11,15 +12,21 @@ class CiscoBaseConnection(BaseConnection):
 
     def check_enable_mode(self, check_string="#"):
         """Check if in enable mode. Return boolean."""
-        return super().check_enable_mode(check_string=check_string)
+        return super(CiscoBaseConnection, self).check_enable_mode(
+            check_string=check_string
+        )
 
     def enable(self, cmd="enable", pattern="ssword", re_flags=re.IGNORECASE):
         """Enter enable mode."""
-        return super().enable(cmd=cmd, pattern=pattern, re_flags=re_flags)
+        return super(CiscoBaseConnection, self).enable(
+            cmd=cmd, pattern=pattern, re_flags=re_flags
+        )
 
     def exit_enable_mode(self, exit_command="disable"):
         """Exits enable (privileged exec) mode."""
-        return super().exit_enable_mode(exit_command=exit_command)
+        return super(CiscoBaseConnection, self).exit_enable_mode(
+            exit_command=exit_command
+        )
 
     def check_config_mode(self, check_string=")#", pattern=""):
         """
@@ -27,7 +34,9 @@ class CiscoBaseConnection(BaseConnection):
 
         Cisco IOS devices abbreviate the prompt at 20 chars in config mode
         """
-        return super().check_config_mode(check_string=check_string, pattern=pattern)
+        return super(CiscoBaseConnection, self).check_config_mode(
+            check_string=check_string, pattern=pattern
+        )
 
     def config_mode(self, config_command="config term", pattern=""):
         """
@@ -37,11 +46,15 @@ class CiscoBaseConnection(BaseConnection):
         """
         if not pattern:
             pattern = re.escape(self.base_prompt[:16])
-        return super().config_mode(config_command=config_command, pattern=pattern)
+        return super(CiscoBaseConnection, self).config_mode(
+            config_command=config_command, pattern=pattern
+        )
 
     def exit_config_mode(self, exit_config="end", pattern="#"):
         """Exit from configuration mode."""
-        return super().exit_config_mode(exit_config=exit_config, pattern=pattern)
+        return super(CiscoBaseConnection, self).exit_config_mode(
+            exit_config=exit_config, pattern=pattern
+        )
 
     def serial_login(
         self,
@@ -127,7 +140,7 @@ class CiscoBaseConnection(BaseConnection):
                     msg = "Login failed - Password required, but none set: {}".format(
                         self.host
                     )
-                    raise NetmikoAuthenticationException(msg)
+                    raise NetMikoAuthenticationException(msg)
 
                 # Check if proper data received
                 if re.search(pri_prompt_terminator, output, flags=re.M) or re.search(
@@ -140,8 +153,8 @@ class CiscoBaseConnection(BaseConnection):
                 i += 1
             except EOFError:
                 self.remote_conn.close()
-                msg = f"Login failed: {self.host}"
-                raise NetmikoAuthenticationException(msg)
+                msg = "Login failed: {}".format(self.host)
+                raise NetMikoAuthenticationException(msg)
 
         # Last try to see if we already logged in
         self.write_channel(self.TELNET_RETURN)
@@ -154,16 +167,16 @@ class CiscoBaseConnection(BaseConnection):
             return return_msg
 
         self.remote_conn.close()
-        msg = f"Login failed: {self.host}"
-        raise NetmikoAuthenticationException(msg)
+        msg = "Login failed: {}".format(self.host)
+        raise NetMikoAuthenticationException(msg)
 
     def cleanup(self):
         """Gracefully exit the SSH session."""
         try:
             self.exit_config_mode()
         except Exception:
+            # Always try to send 'exit' regardless of whether exit_config_mode works or not.
             pass
-        # Always try to send final 'exit' regardless of whether exit_config_mode works or not.
         self._session_log_fin = True
         self.write_channel("exit" + self.RETURN)
 
@@ -176,7 +189,7 @@ class CiscoBaseConnection(BaseConnection):
         if match:
             file_system = match.group(1)
             # Test file_system
-            cmd = f"dir {file_system}"
+            cmd = "dir {}".format(file_system)
             output = self.send_command_expect(cmd)
             if "% Invalid" in output or "%Error:" in output:
                 raise ValueError(
@@ -200,23 +213,15 @@ class CiscoBaseConnection(BaseConnection):
         """Saves Config."""
         self.enable()
         if confirm:
-            output = self.send_command_timing(
-                command_string=cmd, strip_prompt=False, strip_command=False
-            )
+            output = self.send_command_timing(command_string=cmd)
             if confirm_response:
-                output += self.send_command_timing(
-                    confirm_response, strip_prompt=False, strip_command=False
-                )
+                output += self.send_command_timing(confirm_response)
             else:
                 # Send enter by default
-                output += self.send_command_timing(
-                    self.RETURN, strip_prompt=False, strip_command=False
-                )
+                output += self.send_command_timing(self.RETURN)
         else:
             # Some devices are slow so match on trailing-prompt if you can
-            output = self.send_command(
-                command_string=cmd, strip_prompt=False, strip_command=False
-            )
+            output = self.send_command(command_string=cmd)
         return output
 
 

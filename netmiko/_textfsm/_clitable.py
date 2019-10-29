@@ -31,13 +31,7 @@ import copy
 import os
 import re
 import threading
-
-try:
-    # TextFSM >= 1.0 (new package structure)
-    from textfsm import copyable_regex_object
-except ImportError:
-    # TextFSM <= 0.4.1
-    import copyable_regex_object
+import copyable_regex_object
 import textfsm
 from netmiko._textfsm import _texttable as texttable
 

@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
 def test_ssh_connect(net_connect, commands, expected_responses):
     """
     Verify the connection was established successfully
@@ -18,7 +22,7 @@ def test_enable_mode(net_connect, commands, expected_responses):
         enable_prompt = net_connect.find_prompt()
         assert enable_prompt == expected_responses["enable_prompt"]
     except AttributeError:
-        assert True is True
+        assert True == True
 
 
 def test_config_mode(net_connect, commands, expected_responses):
@@ -26,7 +30,7 @@ def test_config_mode(net_connect, commands, expected_responses):
     Test enter config mode
     """
     net_connect.config_mode()
-    assert net_connect.check_config_mode() is True
+    assert net_connect.check_config_mode() == True
 
 
 def test_exit_config_mode(net_connect, commands, expected_responses):
@@ -34,7 +38,7 @@ def test_exit_config_mode(net_connect, commands, expected_responses):
     Test exit config mode
     """
     net_connect.exit_config_mode()
-    assert net_connect.check_config_mode() is False
+    assert net_connect.check_config_mode() == False
 
 
 def test_command_set(net_connect, commands, expected_responses):

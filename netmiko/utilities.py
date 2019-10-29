@@ -1,20 +1,15 @@
 """Miscellaneous utility functions."""
-from glob import glob
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 import io
 import os
 import serial.tools.list_ports
 from netmiko._textfsm import _clitable as clitable
 from netmiko._textfsm._clitable import CliTableError
+from netmiko.py23_compat import text_type
 
-try:
-    from genie.conf.base import Device
-    from genie.libs.parser.utils import get_parser
-    from pyats.datastructures import AttrDict
-
-    GENIE_INSTALLED = True
-except ImportError:
-    GENIE_INSTALLED = False
 
 # Dictionary mapping 'show run' for vendors with different command
 SHOW_RUN_MAPPER = {
@@ -67,7 +62,7 @@ def load_yaml_file(yaml_file):
         with io.open(yaml_file, "rt", encoding="utf-8") as fname:
             return yaml.safe_load(fname)
     except IOError:
-        sys.exit(f"Unable to open YAML file: {yaml_file}")
+        sys.exit("Unable to open YAML file: {0}".format(yaml_file))
 
 
 def load_devices(file_name=None):
@@ -77,34 +72,15 @@ def load_devices(file_name=None):
 
 
 def find_cfg_file(file_name=None):
-    """
-    Search for netmiko_tools inventory file in the following order:
-
-    NETMIKO_TOOLS_CFG environment variable
-    Current directory
-    Home directory
-
-    Look for file named: .netmiko.yml or netmiko.yml
-
-    Also allow NETMIKO_TOOLS_CFG to point directly at a file
-    """
+    """Look for .netmiko.yml in current dir, then ~/.netmiko.yml."""
+    base_file = ".netmiko.yml"
+    check_files = [base_file, os.path.expanduser("~") + "/" + base_file]
     if file_name:
-        if os.path.isfile(file_name):
-            return file_name
-    optional_path = os.environ.get("NETMIKO_TOOLS_CFG", "")
-    if os.path.isfile(optional_path):
-        return optional_path
-    search_paths = [optional_path, ".", os.path.expanduser("~")]
-    # Filter optional_path if null
-    search_paths = [path for path in search_paths if path]
-    for path in search_paths:
-        files = glob(f"{path}/.netmiko.yml") + glob(f"{path}/netmiko.yml")
-        if files:
-            return files[0]
-    raise IOError(
-        ".netmiko.yml file not found in NETMIKO_TOOLS environment variable directory, current "
-        "directory, or home directory."
-    )
+        check_files.insert(0, file_name)
+    for test_file in check_files:
+        if os.path.isfile(test_file):
+            return test_file
+    raise IOError("{}: file not found in current dir or home dir.".format(base_file))
 
 
 def display_inventory(my_devices):
@@ -122,8 +98,8 @@ def display_inventory(my_devices):
     print("\nDevices:")
     print("-" * 40)
     for a_device, device_type in inventory_devices:
-        device_type = f"  ({device_type})"
-        print(f"{a_device:<25}{device_type:>15}")
+        device_type = "  ({})".format(device_type)
+        print("{:<25}{:>15}".format(a_device, device_type))
     print("\n\nGroups:")
     print("-" * 40)
     for a_group in inventory_groups:
@@ -144,7 +120,7 @@ def obtain_all_devices(my_devices):
 def obtain_netmiko_filename(device_name):
     """Create file name based on device_name."""
     _, netmiko_full_dir = find_netmiko_dir()
-    return f"{netmiko_full_dir}/{device_name}.txt"
+    return "{}/{}.txt".format(netmiko_full_dir, device_name)
 
 
 def write_tmp_file(device_name, output):
@@ -163,7 +139,7 @@ def ensure_dir_exists(verify_dir):
         # Exists
         if not os.path.isdir(verify_dir):
             # Not a dir, raise an exception
-            raise ValueError(f"{verify_dir} is not a directory")
+            raise ValueError("{} is not a directory".format(verify_dir))
 
 
 def find_netmiko_dir():
@@ -175,12 +151,12 @@ def find_netmiko_dir():
     netmiko_base_dir = os.path.expanduser(netmiko_base_dir)
     if netmiko_base_dir == "/":
         raise ValueError("/ cannot be netmiko_base_dir")
-    netmiko_full_dir = f"{netmiko_base_dir}/tmp"
+    netmiko_full_dir = "{}/tmp".format(netmiko_base_dir)
     return (netmiko_base_dir, netmiko_full_dir)
 
 
 def write_bytes(out_data, encoding="ascii"):
-    """Legacy for Python2 and Python3 compatible byte stream."""
+    """Write Python2 and Python3 compatible byte stream."""
     if sys.version_info[0] >= 3:
         if isinstance(out_data, type("")):
             if encoding == "utf-8":
@@ -188,6 +164,14 @@ def write_bytes(out_data, encoding="ascii"):
             else:
                 return out_data.encode("ascii", "ignore")
         elif isinstance(out_data, type(b"")):
+            return out_data
+    else:
+        if isinstance(out_data, type("")):
+            if encoding == "utf-8":
+                return out_data.encode("utf-8")
+            else:
+                return out_data.encode("ascii", "ignore")
+        elif isinstance(out_data, type(str(""))):
             return out_data
     msg = "Invalid value for out_data neither unicode nor byte string: {}".format(
         out_data
@@ -201,11 +185,11 @@ def check_serial_port(name):
         cdc = next(serial.tools.list_ports.grep(name))
         return cdc[0]
     except StopIteration:
-        msg = f"device {name} not found. "
+        msg = "device {} not found. ".format(name)
         msg += "available devices are: "
         ports = list(serial.tools.list_ports.comports())
         for p in ports:
-            msg += f"{str(p)},"
+            msg += "{},".format(text_type(p))
         raise ValueError(msg)
 
 
@@ -256,52 +240,4 @@ def get_structured_data(raw_output, platform, command):
         output = raw_output if structured_data == [] else structured_data
         return output
     except CliTableError:
-        return raw_output
-
-
-def get_structured_data_genie(raw_output, platform, command):
-    if not sys.version_info >= (3, 4):
-        raise ValueError("Genie requires Python >= 3.4")
-
-    if not GENIE_INSTALLED:
-        msg = (
-            "\nGenie and PyATS are not installed. Please PIP install both Genie and PyATS:\n"
-            "pip install genie\npip install pyats\n"
-        )
-        raise ValueError(msg)
-
-    if "cisco" not in platform:
-        return raw_output
-
-    genie_device_mapper = {
-        "cisco_ios": "ios",
-        "cisco_xe": "iosxe",
-        "cisco_xr": "iosxr",
-        "cisco_nxos": "nxos",
-        "cisco_asa": "asa",
-    }
-
-    os = None
-    # platform might be _ssh, _telnet, _serial strip that off
-    if platform.count("_") > 1:
-        base_platform = platform.split("_")[:-1]
-        base_platform = "_".join(base_platform)
-    else:
-        base_platform = platform
-
-    os = genie_device_mapper.get(base_platform)
-    if os is None:
-        return raw_output
-
-    # Genie specific construct for doing parsing (based on Genie in Ansible)
-    device = Device("new_device", os=os)
-    device.custom.setdefault("abstraction", {})
-    device.custom["abstraction"]["order"] = ["os"]
-    device.cli = AttrDict({"execute": None})
-    try:
-        # Test of whether their is a parser for the given command (will return Exception if fails)
-        get_parser(command, device)
-        parsed_output = device.parse(command, output=raw_output)
-        return parsed_output
-    except Exception:
         return raw_output

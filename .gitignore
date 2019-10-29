@@ -16,8 +16,6 @@ netmiko.egg-info
 .cache
 bin/.netmiko.cfg
 .vscode/*
-.idea/
-.venv/
 
 # Sphinx documentation
 docs/build/doctrees/
@@ -26,10 +24,3 @@ docs/build/doctrees/
 .tox/*
 
 .pytest_cache/*
-
-# Mac stuff
-.DS_Store
-*/.DS_Store
-
-tests/cisco3-out.txt
-tests/test.log

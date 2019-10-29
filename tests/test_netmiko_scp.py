@@ -1,17 +1,25 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from __future__ import unicode_literals
+import time
+import sys
+import os
 import pytest
+from datetime import datetime
+from getpass import getpass
+from netmiko import ConnectHandler, FileTransfer
 from netmiko import file_transfer
 
-# def test_enable_scp(scp_fixture):
-#    ssh_conn, scp_transfer = scp_fixture
-#
-#    scp_transfer.disable_scp()
-#    output = ssh_conn.send_command_expect("show run | inc scp")
-#    assert 'ip scp server enable' not in output
-#
-#    scp_transfer.enable_scp()
-#    output = ssh_conn.send_command_expect("show run | inc scp")
-#    assert 'ip scp server enable' in output
+###def test_enable_scp(scp_fixture):
+###    ssh_conn, scp_transfer = scp_fixture
+###
+###    scp_transfer.disable_scp()
+###    output = ssh_conn.send_command_expect("show run | inc scp")
+###    assert 'ip scp server enable' not in output
+###
+###    scp_transfer.enable_scp()
+###    output = ssh_conn.send_command_expect("show run | inc scp")
+###    assert 'ip scp server enable' in output
 
 
 def test_scp_put(scp_fixture):
@@ -20,7 +28,7 @@ def test_scp_put(scp_fixture):
         assert False
     else:
         scp_transfer.put_file()
-        assert scp_transfer.check_file_exists() is True
+        assert scp_transfer.check_file_exists() == True
 
 
 def test_remote_space_available(scp_fixture, expected_responses):
@@ -37,10 +45,10 @@ def test_local_space_available(scp_fixture):
 
 def test_verify_space_available_put(scp_fixture):
     ssh_conn, scp_transfer = scp_fixture
-    assert scp_transfer.verify_space_available() is True
+    assert scp_transfer.verify_space_available() == True
     # intentional make there not be enough space available
     scp_transfer.file_size = 100000000000
-    assert scp_transfer.verify_space_available() is False
+    assert scp_transfer.verify_space_available() == False
 
 
 def test_remote_file_size(scp_fixture):
@@ -57,7 +65,7 @@ def test_md5_methods(scp_fixture):
 
     remote_md5 = scp_transfer.remote_md5()
     assert remote_md5 == md5_value
-    assert scp_transfer.compare_md5() is True
+    assert scp_transfer.compare_md5() == True
 
 
 def test_disconnect(scp_fixture):
@@ -68,10 +76,10 @@ def test_disconnect(scp_fixture):
 
 def test_verify_space_available_get(scp_fixture_get):
     ssh_conn, scp_transfer = scp_fixture_get
-    assert scp_transfer.verify_space_available() is True
+    assert scp_transfer.verify_space_available() == True
     # intentional make there not be enough space available
-    scp_transfer.file_size = 100000000000000
-    assert scp_transfer.verify_space_available() is False
+    scp_transfer.file_size = 100000000000
+    assert scp_transfer.verify_space_available() == False
 
 
 def test_scp_get(scp_fixture_get):
@@ -93,7 +101,7 @@ def test_md5_methods_get(scp_fixture_get):
     md5_value = "d8df36973ff832b564ad84642d07a261"
     local_md5 = scp_transfer.file_md5("test9.txt")
     assert local_md5 == md5_value
-    assert scp_transfer.compare_md5() is True
+    assert scp_transfer.compare_md5() == True
 
 
 def test_disconnect_get(scp_fixture_get):
@@ -108,6 +116,7 @@ def test_file_transfer(scp_file_transfer):
     source_file = "test9.txt"
     dest_file = "test9.txt"
     direction = "put"
+    print(file_system)
 
     transfer_dict = file_transfer(
         ssh_conn,

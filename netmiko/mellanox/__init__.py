@@ -1,3 +1,4 @@
-from netmiko.mellanox.mellanox_mlnxos_ssh import MellanoxMlnxosSSH
+from __future__ import unicode_literals
+from netmiko.mellanox.mellanox_ssh import MellanoxSSH
 
-__all__ = ["MellanoxMlnxosSSH"]
+__all__ = ["MellanoxSSH"]

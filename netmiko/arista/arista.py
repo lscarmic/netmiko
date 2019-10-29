@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import time
 from netmiko.cisco_base_connection import CiscoSSHConnection
 from netmiko.cisco_base_connection import CiscoFileTransfer
@@ -24,13 +25,13 @@ class AristaBase(CiscoSSHConnection):
 
         Can also be (s2)
         """
-        log.debug(f"pattern: {pattern}")
+        log.debug("pattern: {0}".format(pattern))
         self.write_channel(self.RETURN)
         output = self.read_until_pattern(pattern=pattern)
-        log.debug(f"check_config_mode: {repr(output)}")
+        log.debug("check_config_mode: {0}".format(repr(output)))
         output = output.replace("(s1)", "")
         output = output.replace("(s2)", "")
-        log.debug(f"check_config_mode: {repr(output)}")
+        log.debug("check_config_mode: {0}".format(repr(output)))
         return check_string in output
 
     def _enter_shell(self):
@@ -50,7 +51,7 @@ class AristaTelnet(AristaBase):
     def __init__(self, *args, **kwargs):
         default_enter = kwargs.get("default_enter")
         kwargs["default_enter"] = "\r\n" if default_enter is None else default_enter
-        super().__init__(*args, **kwargs)
+        super(AristaTelnet, self).__init__(*args, **kwargs)
 
 
 class AristaFileTransfer(CiscoFileTransfer):
@@ -63,15 +64,13 @@ class AristaFileTransfer(CiscoFileTransfer):
         dest_file,
         file_system="/mnt/flash",
         direction="put",
-        **kwargs,
     ):
-        return super().__init__(
+        return super(AristaFileTransfer, self).__init__(
             ssh_conn=ssh_conn,
             source_file=source_file,
             dest_file=dest_file,
             file_system=file_system,
             direction=direction,
-            **kwargs,
         )
 
     def remote_space_available(self, search_pattern=""):
@@ -94,7 +93,7 @@ class AristaFileTransfer(CiscoFileTransfer):
                 remote_file = self.dest_file
             elif self.direction == "get":
                 remote_file = self.source_file
-        remote_md5_cmd = f"{base_cmd} file:{self.file_system}/{remote_file}"
+        remote_md5_cmd = "{} file:{}/{}".format(base_cmd, self.file_system, remote_file)
         dest_md5 = self.ssh_ctl_chan.send_command(
             remote_md5_cmd, max_loops=750, delay_factor=4
         )

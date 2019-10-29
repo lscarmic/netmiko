@@ -1,4 +1,6 @@
 """Alcatel-Lucent Enterprise AOS support (AOS6 and AOS8)."""
+from __future__ import print_function
+from __future__ import unicode_literals
 import time
 from netmiko.cisco_base_connection import CiscoSSHConnection
 
@@ -42,6 +44,6 @@ class AlcatelAosSSH(CiscoSSHConnection):
         self, cmd="write memory flash-synchro", confirm=False, confirm_response=""
     ):
         """Save Config"""
-        return super().save_config(
+        return super(AlcatelAosSSH, self).save_config(
             cmd=cmd, confirm=confirm, confirm_response=confirm_response
         )

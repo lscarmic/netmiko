@@ -38,6 +38,8 @@ Examples
 >>> remote_device['device_type'] = best_match
 >>> connection = ConnectHandler(**remote_device)
 """
+from __future__ import unicode_literals
+
 import re
 import time
 from netmiko.ssh_dispatcher import ConnectHandler
@@ -185,7 +187,7 @@ class SSHDetect(object):
 
     Attributes
     ----------
-    connection : netmiko.terminal_server.TerminalServerSSH
+    connection : netmiko.terminal_server.TerminalServer
         A basic connection to the remote SSH end.
     potential_matches: dict
         Dict of (device_type, accuracy) that is populated through an interaction with the
@@ -260,6 +262,7 @@ class SSHDetect(object):
         self.connection.write_channel(cmd + "\n")
         time.sleep(1)
         output = self.connection._read_channel_timing()
+        output = self.connection.strip_ansi_escape_codes(output)
         output = self.connection.strip_backspaces(output)
         return output
 
